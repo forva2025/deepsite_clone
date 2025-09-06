@@ -2,7 +2,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-// import { InferenceClient } from "@huggingface/inference"; // Disabled
+import { createAIClient, getApiKeyForProvider } from "@/lib/ai-client";
 
 import { MODELS, PROVIDERS } from "@/lib/providers";
 import {
@@ -24,12 +24,6 @@ import { callAiRewritePrompt } from "@/app/actions/rewrite-prompt";
 const ipAddresses = new Map();
 
 export async function POST(request: NextRequest) {
-  // Hugging Face integration disabled
-  return NextResponse.json(
-    { error: "AI features disabled - Hugging Face integration removed" },
-    { status: 503 }
-  );
-  
   const authHeaders = await headers();
   const userToken = request.cookies.get(MY_TOKEN_KEY())?.value;
 
@@ -65,51 +59,42 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let token = userToken;
-  let billTo: string | null = null;
+  // Note: Authentication is now handled through API keys in .env.local
+  // The old token-based system has been replaced with direct API key access
 
-  /**
-   * Handle local usage token, this bypass the need for a user token
-   * and allows local testing without authentication.
-   * This is useful for development and testing purposes.
-   */
-  if (process.env.HF_TOKEN && process.env.HF_TOKEN.length > 0) {
-    token = process.env.HF_TOKEN;
-  }
-
-  const ip = authHeaders.get("x-forwarded-for")?.includes(",")
-    ? authHeaders.get("x-forwarded-for")?.split(",")[1].trim()
-    : authHeaders.get("x-forwarded-for");
-
-  if (!token) {
-    ipAddresses.set(ip, (ipAddresses.get(ip) || 0) + 1);
-    if (ipAddresses.get(ip) > MAX_REQUESTS_PER_IP) {
-      return NextResponse.json(
-        {
-          ok: false,
-          openLogin: true,
-          message: "Log In to continue using the service",
-        },
-        { status: 429 }
-      );
-    }
-
-    token = process.env.DEFAULT_HF_TOKEN as string;
-    billTo = "huggingface";
-  }
-
-  const DEFAULT_PROVIDER = PROVIDERS.novita;
+  const DEFAULT_PROVIDER = 'deepseek';
   const selectedProvider =
     provider === "auto"
-      ? PROVIDERS[selectedModel.autoProvider as keyof typeof PROVIDERS]
-      : PROVIDERS[provider as keyof typeof PROVIDERS] ?? DEFAULT_PROVIDER;
+      ? selectedModel.autoProvider
+      : provider || selectedModel.autoProvider;
+
+  // Check if API key is available for the selected provider
+  let apiKey: string;
+  try {
+    apiKey = getApiKeyForProvider(selectedProvider);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: `API key not configured for ${selectedProvider}`,
+        setupRequired: true,
+        instructions: `Please add ${selectedProvider.toUpperCase().replace('-', '_')}_API_KEY to your .env.local file`,
+      },
+      { status: 400 }
+    );
+  }
 
   let rewrittenPrompt = prompt;
 
-  // if (prompt?.length < 240) {
-    
-    rewrittenPrompt = await callAiRewritePrompt(prompt, { token, billTo });
-  // }
+  // Rewrite prompt if it's short (less than 240 characters)
+  if (prompt?.length < 240) {
+    try {
+      rewrittenPrompt = await callAiRewritePrompt(prompt, { token: apiKey, billTo: null });
+    } catch (error) {
+      console.error('Prompt rewrite failed, using original:', error);
+      // Continue with original prompt if rewrite fails
+    }
+  }
 
   try {
     const encoder = new TextEncoder();
@@ -125,43 +110,34 @@ export async function POST(request: NextRequest) {
     });
 
     (async () => {
-      // let completeResponse = "";
       try {
-        const client = new InferenceClient(token);
-        const chatCompletion = client.chatCompletionStream(
+        const client = createAIClient(selectedProvider, selectedModel.value);
+        
+        const messages = [
           {
-            model: selectedModel.value,
-            provider: selectedProvider.id as any,
-            messages: [
-              {
-                role: "system",
-                content: INITIAL_SYSTEM_PROMPT,
-              },
-              ...(pages?.length > 1 ? [{
-                role: "assistant",
-                content: `Here are the current pages:\n\n${pages.map((p: Page) => `- ${p.path} \n${p.html}`).join("\n")}\n\nNow, please create a new page based on this code. Also here are the previous prompts:\n\n${previousPrompts.map((p: string) => `- ${p}`).join("\n")}`
-              }] : []),
-              {
-                role: "user",
-                content: redesignMarkdown
-                  ? `Here is my current design as a markdown:\n\n${redesignMarkdown}\n\nNow, please create a new design based on this markdown.`
-                  : rewrittenPrompt,
-              },
-            ],
-            max_tokens: selectedProvider.max_tokens,
+            role: "system" as const,
+            content: INITIAL_SYSTEM_PROMPT,
           },
-          billTo ? { billTo } : {}
-        );
+          ...(pages?.length > 1 ? [{
+            role: "assistant" as const,
+            content: `Here are the current pages:\n\n${pages.map((p: Page) => `- ${p.path} \n${p.html}`).join("\n")}\n\nNow, please create a new page based on this code. Also here are the previous prompts:\n\n${previousPrompts.map((p: string) => `- ${p}`).join("\n")}`
+          }] : []),
+          {
+            role: "user" as const,
+            content: redesignMarkdown
+              ? `Here is my current design as a markdown:\n\n${redesignMarkdown}\n\nNow, please create a new design based on this markdown.`
+              : rewrittenPrompt,
+          },
+        ];
 
-        while (true) {
-          const { done, value } = await chatCompletion.next();
-          if (done) {
-            break;
+        const chatCompletion = client.chatCompletionStream(messages);
+
+        for await (const chunk of chatCompletion) {
+          if (chunk.content) {
+            await writer.write(encoder.encode(chunk.content));
           }
-
-          const chunk = value.choices[0]?.delta?.content;
-          if (chunk) {
-            await writer.write(encoder.encode(chunk));
+          if (chunk.done) {
+            break;
           }
         }
       } catch (error: any) {

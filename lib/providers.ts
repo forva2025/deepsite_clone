@@ -1,4 +1,9 @@
 export const PROVIDERS = {
+  deepseek: {
+    name: "DeepSeek",
+    max_tokens: 32_000,
+    id: "deepseek",
+  },
   "fireworks-ai": {
     name: "Fireworks AI",
     max_tokens: 131_000,
@@ -38,23 +43,16 @@ export const PROVIDERS = {
 
 export const MODELS = [
   {
-    value: "deepseek-ai/DeepSeek-V3-0324",
-    label: "DeepSeek V3 O324",
-    providers: ["fireworks-ai", "nebius", "sambanova", "novita", "hyperbolic"],
-    autoProvider: "novita",
+    value: "deepseek-chat",
+    label: "DeepSeek Chat (V3.1)",
+    providers: ["deepseek"],
+    autoProvider: "deepseek",
   },
   {
-    value: "deepseek-ai/DeepSeek-R1-0528",
-    label: "DeepSeek R1 0528",
-    providers: [
-      "fireworks-ai",
-      "novita",
-      "hyperbolic",
-      "nebius",
-      "together",
-      "sambanova",
-    ],
-    autoProvider: "novita",
+    value: "deepseek-reasoner",
+    label: "DeepSeek Reasoner (V3.1)",
+    providers: ["deepseek"],
+    autoProvider: "deepseek",
     isThinker: true,
   },
   {
@@ -73,9 +71,9 @@ export const MODELS = [
   {
     value: "deepseek-ai/DeepSeek-V3.1",
     label: "DeepSeek V3.1",
-    providers: ["fireworks-ai", "novita"],
+    providers: ["deepseek", "fireworks-ai", "novita"],
     isNew: true,
-    autoProvider: "fireworks-ai",
+    autoProvider: "deepseek",
   },
   {
     value: "moonshotai/Kimi-K2-Instruct-0905",

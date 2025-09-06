@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  /* DeepSite Local Configuration - Hugging Face Integration Removed */
+  
   // Webpack configuration for audio/video files
   webpack(config, options) {
     const { isServer } = options;
@@ -25,7 +26,8 @@ const nextConfig: NextConfig = {
 
     return config;
   },
-  // Turbopack configuration for audio/video files
+  
+  // Turbopack configuration for audio/video files (faster bundler)
   turbo: {
     rules: {
       "*.ogg": {
@@ -46,10 +48,50 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  
+  // Image optimization configuration
   images: {
     remotePatterns: [
-      // Add your own image domains here
+      // Add trusted image domains here for external images
+      // Example:
+      // {
+      //   protocol: 'https',
+      //   hostname: 'example.com',
+      //   port: '',
+      //   pathname: '/images/**',
+      // },
     ],
+    // Enable image optimization
+    unoptimized: false,
+  },
+  
+  // Performance optimizations
+  experimental: {
+    // Enable Turbopack for faster builds
+    turbo: {
+      rules: {
+        // Additional rules can be added here
+      },
+    },
+  },
+  
+  // Security headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+        ],
+      },
+    ];
   },
 };
 
