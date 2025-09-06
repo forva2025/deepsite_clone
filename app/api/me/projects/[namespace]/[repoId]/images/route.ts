@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { RepoDesignation, uploadFiles } from "@huggingface/hub";
+// import { RepoDesignation, uploadFiles } from "@huggingface/hub"; // Disabled
 
 import { isAuthenticated } from "@/lib/auth";
 import Project from "@/models/Project";
@@ -11,6 +11,12 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ namespace: string; repoId: string }> }
 ) {
+  // Hugging Face integration disabled
+  return NextResponse.json(
+    { error: "Image upload disabled - Hugging Face integration removed" },
+    { status: 503 }
+  );
+  
   try {
     const user = await isAuthenticated();
 

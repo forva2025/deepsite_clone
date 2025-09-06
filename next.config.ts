@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Webpack configuration for audio/video files
   webpack(config, options) {
     const { isServer } = options;
     config.module.rules.push({
@@ -24,8 +25,31 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+  // Turbopack configuration for audio/video files
+  turbo: {
+    rules: {
+      "*.ogg": {
+        loaders: ["url-loader"],
+        as: "*.js",
+      },
+      "*.mp3": {
+        loaders: ["url-loader"],
+        as: "*.js",
+      },
+      "*.wav": {
+        loaders: ["url-loader"],
+        as: "*.js",
+      },
+      "*.mpeg": {
+        loaders: ["url-loader"],
+        as: "*.js",
+      },
+    },
+  },
   images: {
-    remotePatterns: [new URL('https://huggingface.co/**')],
+    remotePatterns: [
+      // Add your own image domains here
+    ],
   },
 };
 

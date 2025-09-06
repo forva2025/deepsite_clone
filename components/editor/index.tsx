@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
 import { editor } from "monaco-editor";
 import Editor from "@monaco-editor/react";
@@ -39,13 +39,20 @@ export const AppEditor = ({
   images?: string[];
   isNew?: boolean;
 }) => {
+  // Add hydration safety
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const [htmlStorage, , removeHtmlStorage] = useLocalStorage("pages");
   const [, copyToClipboard] = useCopyToClipboard();
   const { htmlHistory, setHtmlHistory, prompts, setPrompts, pages, setPages } =
     useEditor(
       initialPages,
       project?.prompts ?? [],
-      typeof htmlStorage === "string" ? htmlStorage : undefined
+      isClient && typeof htmlStorage === "string" ? htmlStorage : undefined
     );
 
   const searchParams = useSearchParams();
@@ -191,6 +198,20 @@ export const AppEditor = ({
       }
     );
   }, [pages, currentPage]);
+
+  // Prevent hydration mismatch by not rendering until client-side
+  if (!isClient) {
+    return (
+      <section className="h-[100dvh] bg-neutral-950 flex flex-col">
+        <div className="flex flex-1 items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white">Loading editor...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="h-[100dvh] bg-neutral-950 flex flex-col">

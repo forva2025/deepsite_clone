@@ -1,9 +1,12 @@
-import { InferenceClient } from "@huggingface/inference";
+// import { InferenceClient } from "@huggingface/inference"; // Disabled
 
 const START_REWRITE_PROMPT = ">>>>>>> START PROMPT >>>>>>";
 const END_REWRITE_PROMPT = ">>>>>>> END PROMPT >>>>>>";
 
-export const callAiRewritePrompt = async (prompt: string, { token, billTo }: { token: string, billTo?: string | null }) => {
+export const callAiRewritePrompt = async (prompt: string, { token, billTo }: { token: string, billTo?: string | null }) => {
+  // Hugging Face integration disabled
+  throw new Error("AI rewrite feature disabled - Hugging Face integration removed");
+  
   const client = new InferenceClient(token);
   const response = await client.chatCompletion(
     {

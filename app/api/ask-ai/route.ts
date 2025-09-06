@@ -2,7 +2,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { InferenceClient } from "@huggingface/inference";
+// import { InferenceClient } from "@huggingface/inference"; // Disabled
 
 import { MODELS, PROVIDERS } from "@/lib/providers";
 import {
@@ -24,6 +24,12 @@ import { callAiRewritePrompt } from "@/app/actions/rewrite-prompt";
 const ipAddresses = new Map();
 
 export async function POST(request: NextRequest) {
+  // Hugging Face integration disabled
+  return NextResponse.json(
+    { error: "AI features disabled - Hugging Face integration removed" },
+    { status: 503 }
+  );
+  
   const authHeaders = await headers();
   const userToken = request.cookies.get(MY_TOKEN_KEY())?.value;
 

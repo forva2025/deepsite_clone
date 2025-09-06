@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disable Extensions for DeepSite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .code {
+            background: #f1f3f4;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 Browser Extension Conflict Detected</h1>
+        
+        <div class="warning">
+            <strong>Issue:</strong> A browser extension is causing a regex stack overflow error in your DeepSite application. This is preventing the editor from loading properly.
+        </div>
+
+        <h2>🔧 Solutions:</h2>
+
+        <div class="step">
+            <h3>Option 1: Disable Extensions Temporarily (Recommended)</h3>
+            <p>Open Chrome in incognito mode or with extensions disabled:</p>
+            <div class="code">
+                chrome.exe --disable-extensions --disable-plugins
+            </div>
+            <p>Or use incognito mode: <strong>Ctrl + Shift + N</strong></p>
+        </div>
+
+        <div class="step">
+            <h3>Option 2: Identify Problematic Extension</h3>
+            <p>The problematic extension ID is: <code>mjndbfepgmlpdgnpbipiohcnmlbfcinh</code></p>
+            <ol>
+                <li>Go to <code>chrome://extensions/</code></li>
+                <li>Look for extensions with this ID or similar behavior</li>
+                <li>Disable extensions one by one to identify the culprit</li>
+                <li>Common problematic extensions: ad blockers, privacy tools, developer tools</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Option 3: Use Different Browser</h3>
+            <p>Try accessing your app in:</p>
+            <ul>
+                <li>Firefox</li>
+                <li>Edge</li>
+                <li>Safari</li>
+                <li>Chrome with all extensions disabled</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Option 4: Clear Browser Data</h3>
+            <p>Sometimes clearing browser data helps:</p>
+            <ol>
+                <li>Go to <code>chrome://settings/clearBrowserData</code></li>
+                <li>Select "All time"</li>
+                <li>Check "Cached images and files"</li>
+                <li>Click "Clear data"</li>
+            </ol>
+        </div>
+
+        <div class="warning">
+            <strong>Note:</strong> This is a browser extension issue, not a problem with your DeepSite application. The app itself is working correctly.
+        </div>
+
+        <p><a href="/projects/new" style="color: #007bff; text-decoration: none;">← Back to DeepSite Editor</a></p>
+    </div>
+</body>
+</html>

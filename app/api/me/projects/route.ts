@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createRepo, RepoDesignation, uploadFiles } from "@huggingface/hub";
+// import { createRepo, RepoDesignation, uploadFiles } from "@huggingface/hub"; // Disabled
 
 import { isAuthenticated } from "@/lib/auth";
 import Project from "@/models/Project";
@@ -41,6 +41,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Hugging Face integration disabled
+  return NextResponse.json(
+    { error: "Project creation disabled - Hugging Face integration removed" },
+    { status: 503 }
+  );
+  
   const user = await isAuthenticated();
 
   if (user instanceof NextResponse || !user) {

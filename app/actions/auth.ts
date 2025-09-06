@@ -3,6 +3,9 @@
 import { headers } from "next/headers";
 
 export async function getAuth() {
+  // Hugging Face integration disabled
+  throw new Error("Authentication disabled - Hugging Face integration removed");
+  
   const authList = await headers();
   const host = authList.get("host") ?? "localhost:3000";
   const url = host.includes("/spaces/enzostvs")
